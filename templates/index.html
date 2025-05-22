@@ -96,7 +96,9 @@
                         icon: stop.parent_station_id == null ? redIcon : greenIcon,
                     }
                 );
+                marker.bindPopup("<b>"+stop.name+"</b><br/>Id: "+stop.id+"<br/>Lat: "+stop.lat+"<br/>Lng: "+stop.lng);
                 markers.push(marker.addTo(map).on('click', (e) => {
+                    marker.openPopup();
                     console.log({
                         "id": stop.id,
                         "location": {
