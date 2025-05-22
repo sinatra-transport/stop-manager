@@ -19,8 +19,19 @@ class StopGrouping:
 app = Flask(__name__)
 
 
+def _groups_config_file() -> Path:
+    return Path(os.environ["GROUPS_CONFIG_FILE"] if "GROUPS_CONFIG_FILE" in os.environ else "groups.yml")
+
+
+def _stops_list_locations() -> List[Path]:
+    paths = os.environ["STOPS_LIST_LOCATION"].split(",") if "STOPS_LIST_LOCATION" in os.environ else [
+        "data/bus_stops.txt", "data/lr_stops.txt"
+    ]
+    return [Path(p) for p in paths]
+
+
 def load_yaml() -> List[StopGrouping]:
-    groups = yaml.safe_load(Path(os.environ["GROUPS_CONFIG_FILE"]).read_text())
+    groups = yaml.safe_load(_groups_config_file().read_text())
     if groups is None or "groupings" not in groups:
         return []
     groupings = groups["groupings"]
@@ -51,10 +62,10 @@ def index():
 @app.get('/stops/list')
 def stop_list():
     groupings = load_yaml()
-    stops_list_paths = os.environ["STOPS_LIST_LOCATION"].split(",")
+    stops_list_paths = _stops_list_locations()
     stops = []
     for stop_list_path in stops_list_paths:
-        df = pd.read_csv(Path(stop_list_path), keep_default_na=False)
+        df = pd.read_csv(stop_list_path, keep_default_na=False)
 
         for i, stop in df.iterrows():
             if "parent_station" in stop and stop["parent_station"] != "":
